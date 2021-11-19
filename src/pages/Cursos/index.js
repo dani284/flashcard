@@ -25,6 +25,7 @@ const Home = () => {
             return (
               <Curso
                 key={curso.colecaoId}
+                id={curso.colecaoId}
                 nome={curso.nome}
                 descricao={curso.descricao}
               />

@@ -1,20 +1,50 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Container } from "./styles";
 import Spacer from "../../components/Spacer";
 
 import axios from "axios";
 
-const Adicionar = () => {
+const Adicionar = ({ editar }) => {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [privacidade, setPrivacidade] = useState(false);
 
   const navigate = useNavigate();
 
+  const { id } = useParams();
+
+  function dados() {
+    axios
+      .get(`https://flashcard-api-mayck.herokuapp.com/api/colecoes/${id}`)
+      .then(({ data }) => {
+        setNome(data.nome);
+        setDescricao(data.descricao);
+        setPrivacidade(data.publico);
+      });
+  }
+
+  useEffect(() => {
+    editar && dados();
+  }, []);
+
   function submit(e) {
     e.preventDefault();
+
+    if (editar) {
+      axios
+        .put(`https://flashcard-api-mayck.herokuapp.com/api/colecoes/${id}`, {
+          nome,
+          descricao,
+          publico: privacidade,
+        })
+        .finally(() => {
+          navigate("/cursos");
+        });
+      return;
+    }
+
     axios
       .post("https://flashcard-api-mayck.herokuapp.com/api/colecoes", {
         nome,
@@ -29,7 +59,7 @@ const Adicionar = () => {
   return (
     <Container>
       <form id="content" onSubmit={submit}>
-        <h1>Adicionar curso</h1>
+        <h1>{editar ? "Editar curso" : "Cadastrar curso"}</h1>
         <Spacer />
         <label>Nome:</label>
         <input
@@ -68,7 +98,11 @@ const Adicionar = () => {
             type="radio"
           />
         </div>
-        <input className="sendButton" type="submit" />
+        <input
+          className="sendButton"
+          type="submit"
+          value={editar ? "Salvar" : "Cadastrar"}
+        />
       </form>
     </Container>
   );
